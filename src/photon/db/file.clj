@@ -1,15 +1,15 @@
 (ns photon.db.file
   (:require [cheshire.core :as json]
             [clojure.tools.logging :as log]
-            [photon.config :as conf]
             [photon.db :as db])
   (:import (java.io File)))
 
 (defn new-file [^File s] (File. s))
 
-(def file-name (:file.path conf/config))
+(defn file-name [conf]
+  (:file.path conf))
 
-(db/defdbplugin DBFile []
+(db/defdbplugin DBFile [conf]
   db/DB
   (db/driver-name [this] "file")
   (db/fetch [this stream-name order-id]
@@ -20,8 +20,8 @@
                 (db/delete-all! this)
                 (dorun (map #(db/store this %) filtered))))
   (db/delete-all! [this]
-                  (.delete (new-file file-name))
-                  (new-file file-name))
+                  (.delete (new-file (file-name conf)))
+                  (new-file (file-name conf)))
   (db/put [this data]
           (db/delete! this (:local-id data))
           (db/store this data))
@@ -36,7 +36,7 @@
                                      (if (nil? server-timestamp)
                                        (System/currentTimeMillis)
                                        (long server-timestamp)))]
-              (with-open [w (clojure.java.io/writer file-name :append true)]
+              (with-open [w (clojure.java.io/writer (file-name conf) :append true)]
                 (.write w (str (json/generate-string new-payload) "\n")))))
   (db/distinct-values [this k]
                       (into #{} (map #(get % k)
@@ -44,7 +44,7 @@
   (db/lazy-events [this stream-name date]
                   (log/info "Retrieving events from" stream-name)
                   (try
-                    (with-open [rdr (clojure.java.io/reader file-name)]
+                    (with-open [rdr (clojure.java.io/reader (file-name conf))]
                       (doall
                        (filter (fn [ev]
                                  (and
