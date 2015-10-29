@@ -9,7 +9,7 @@
 (defn file-name [conf]
   (:file.path conf))
 
-(db/defdbplugin DBFile [conf]
+(defrecord DBFile [conf]
   db/DB
   (db/driver-name [this] "file")
   (db/fetch [this stream-name order-id]
