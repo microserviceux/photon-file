@@ -30,7 +30,7 @@
                    filtered (filter #(= id (:local-id %)) all)]
                filtered))
   (db/store [this payload]
-            (log/info "Payload" payload)
+            (log/trace "Payload" payload)
             (let [server-timestamp (:server-timestamp payload)
                   new-payload (assoc (into {} payload) :server-timestamp
                                      (if (nil? server-timestamp)
