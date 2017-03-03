@@ -1,7 +1,9 @@
 (ns photon-file.core-test
   (:require [clojure.test :refer :all]
-            [photon-file.core :refer :all]))
+            [photon.db.file :as file]
+            [photon.db-check :as check]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest db-check-test
+  (let [f (java.io.File/createTempFile "test-photon-file" "pev")
+        impl (file/->DBFile {:file.path (.getAbsolutePath f)})]
+    (check/db-check impl)))
