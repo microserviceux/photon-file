@@ -14,9 +14,11 @@
   (db/driver-name [this] "file")
   (db/fetch [this stream-name order-id]
     (first (db/search this order-id)))
-  (db/delete! [this id]
+  (db/delete! [this stream-name order-id]
     (let [all (db/lazy-events this "__all__" 0)
-          filtered (remove #(= id (:order-id %)) all)]
+          filtered (remove #(and (= stream-name (:stream-name %))
+                                 (= order-id (:order-id %)))
+                           all)]
       (db/delete-all! this)
       (dorun (map #(db/store this %) filtered))))
   (db/delete-all! [this]
